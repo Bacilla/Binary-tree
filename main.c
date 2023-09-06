@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h> // atoi 
+#include <stdlib.h> // atoi, malloc
 
 // Структура узла бинарного дерева
 typedef struct Node {
@@ -12,12 +12,14 @@ typedef struct Node {
 // Функции по заданию
 void tree_initialization(Node **ppRoot);
 void add_node(Node **ppRoot);
-
+int print_tree_data(Node **ppRoot);
+void save_tree_data(Node **ppRoot, int arr[], int *pi);
 
 // Вспомогательные функции
 Node *create_node(Node **ppRoot);
 int bin_search(Node **ppRoot, int val);
 int get_int();
+void show_command();
 
 
 
@@ -25,15 +27,40 @@ int main() {
     // Корень дерева
     Node *root = NULL; 
 
-    // Создание первого узла дерева (корня)
-    tree_initialization(&root);
+    show_command();
+    while(1) {
+        printf("\ncommand: ");
+        // Получаем и обрабатываем команду от пользователя
+        int command = get_int();
+        if(command < 1 || command > 3) {
+            printf("Incorrect command!\n");
+            continue;
+        }
 
-    add_node(&root);
-    add_node(&root);
-    add_node(&root);
-
-
-
+        // В зависимости от команды совершаем действие
+        switch (command) {
+            case 1:
+                if(root == NULL) {
+                    // Создание первого узла дерева (корня)
+                    tree_initialization(&root);
+                } else {
+                    // Добавление нового узла в дерево
+                    add_node(&root);
+                }
+                break;
+            case 2:
+                int res = print_tree_data(&root);
+                if(res == 1) {
+                    printf("Error writing file!\n");
+                } else {
+                    printf("Tree data successfully written in file!\n");
+                }
+                break;
+            case 3:
+                printf("goodbye &_&\n");
+                return 0;
+        }
+    }
     return 0;
 }
 
@@ -72,9 +99,54 @@ void add_node(Node **ppRoot) {
     }
 }
 
+// Функция создаёт файл для записи данных из дерева, возвращает 1 если произошла ошибка
+int print_tree_data(Node **ppRoot) {
+    if(*ppRoot == NULL) {
+        return 1;
+    }
+    //char *file_name = "treeData.txt"; // Проблема тут
+    FILE *fp = fopen("treeData.txt", "w"); // создание нового пустого файла для записи
+    if(fp == NULL) {
+        return 1;
+    }
 
+    // массив для хранения упорядоченных данных из дерева
+    int arr[100] = {0};
+    int i = 0;
 
+    // arr и i нужны для подсчёта и сохданения в порядке возрастания всех значений дерева
+    save_tree_data(&(*ppRoot), arr, &i);
 
+    // Выводим информацию на консоль
+    for(int j = 0; j < 100; j++) {
+        if(j == i) 
+            break;
+        printf("%d ", *(arr + j));
+    }
+
+    // Записываем информацию в файл
+    for(int j = 0; j != i; j++) {
+        fprintf(fp, "%d ", *(arr + j));
+    }
+    fclose(fp);
+
+    return 0;
+}
+
+// Функция записывает все элементы дерева в порядке возрастания в файл,
+// возвращает 1 - если возникла ошибка, и 0 - если запись прошла успешно
+void save_tree_data(Node **ppRoot, int arr[], int *pi) {
+    if(*ppRoot == NULL) {
+        return;
+    }
+
+    save_tree_data(&((*ppRoot)->left), arr, &(*pi));
+
+    *(arr + (*pi)) = (*ppRoot)->data;
+    (*pi)++;
+
+    save_tree_data(&((*ppRoot)->right), arr, &(*pi));
+}
 
 // Функция создаёт и инициализирует новый узел, возвращает указатель на новый узел
 Node *create_node(Node **ppRoot) {
@@ -123,4 +195,9 @@ int get_int() {
     // Преобразуем полученные массив символов в число типа int 
 	int value = atoi(strValue);
 	return value;
+}
+
+// Функция выводит на экран допустымие комманды
+void show_command() {
+    printf("Commands:\n\"1\": add note in binary tree\n\"2\": save tree data in .txt file\n\"3\": exit\n");
 }
