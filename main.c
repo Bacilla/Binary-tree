@@ -57,14 +57,14 @@ void add_node(Node **ppRoot) {
         if(new_node->data > temp->data) {
             // Если левый узел конечный - сохраняем в него новый элемент
             if(temp->right == NULL) {
-                temp->right = new_node; // ТУТ НУЖНО КАКИМ-ТО ОБРАЗОМ КЛАСТЬ НЕ В КОПИЮ НИЖНОГО УЗЛА, А В ОРИГИНАЛ!
+                temp->right = new_node;
                 break;
             }
             temp = temp->right;
         } else if(new_node->data < temp->data) {
             // Если правый узел конечный - сохраняем в него новый элемент
             if(temp->left == NULL) {
-                temp->left = new_node; // ТУТ НУЖНО КАКИМ-ТО ОБРАЗОМ КЛАСТЬ НЕ В КОПИЮ НЕЖНОГО УЗЛА, А В ОРИГИНАЛ!
+                temp->left = new_node;  
                 break;
             }
             temp = temp->left;
