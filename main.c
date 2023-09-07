@@ -15,7 +15,7 @@ void add_node(Node **ppRoot);
 int print_tree_data(Node **ppRoot);
 void save_tree_data(Node **ppRoot, int arr[], int *pi);
 // часть 2
-void remove_node(Node *node_to_remove, Node **ppRoot);
+void remove_node(Node *node_to_remove, Node **ppRoot, Node **ppParent);
 
 // Вспомогательные функции
 Node *create_node(Node **ppRoot);
@@ -23,7 +23,7 @@ int bin_search(Node **ppRoot, int val);
 int get_int();
 void show_command();
 // часть 2
-Node *find_node_to_remove(int data, Node **ppRoot);
+Node *find_node_to_remove(int data, Node **ppRoot, Node **parent);
 
 
 
@@ -71,12 +71,15 @@ int main() {
                 printf("data(int) to remove: ");
                 int data_to_remove = get_int();
                 // Поиск узла, который содержит введённое значение
-                Node *node_to_remove = find_node_to_remove(data_to_remove, &root);
+                Node *parent = NULL;
+                Node *node_to_remove = find_node_to_remove(data_to_remove, &root, &parent);
                 if(node_to_remove == NULL) {
                     printf("Error! the tree do not have %d data\n", data_to_remove);
+                    break;
                 }
                 // Удаляем узел
-                remove_node(node_to_remove, &root);
+                remove_node(node_to_remove, &root, &parent);
+                printf("success remove \n");
                 break;
             case 4:
                 printf("goodbye &_&\n");
@@ -87,45 +90,48 @@ int main() {
 }
 
 // Функция удаляет узел из дерева. Возвращает 1 в случае ошибки и 0 если удаление прошло успешно
-void remove_node(Node *node_to_remove, Node **ppRoot) {  
+void remove_node(Node *node_to_remove, Node **ppRoot, Node **ppParent) {  
+    // ФУНКЦИЯ РАБОТАЕТ С НЕ ПУСТЫМ ДЕРЕВОМ, СОДЕРЖАЩИМ ЭЛЕМЕНТ DATA
+
     // Указатель на узел, который надо удалить. Инзначально равен корню дерева
     Node **ppr_node = &(*ppRoot);
     Node *pr_node = *ppRoot;
-    //Node *prev_r_node = NULL; // родительский узел удаляемого
 
     
-    // // Если надо удалить корень дерева, при этом дерево состоит из одного лишь корня
-    // if(data == (*ppRoot)->data) {
-
-    // }
-
-    
-    // НА ЭТОМ ЭТАПЕ ДЕРЕВО НЕ ПУСТОЕ И СОДЕРЖИТ ЭЛЕМЕНТ DATA
-
-    // Случай, когда у узла есть только одно поддерево
-    if(pr_node->left != NULL && pr_node->right == NULL) {
-        *ppr_node = pr_node->left;
-    }
-    if(pr_node->right != NULL && pr_node->left == NULL) {
-        *ppr_node = pr_node->right;
-    }
-
     // Случай, когда у узла нет поддеревьев
+    if(node_to_remove->left == NULL && node_to_remove->right == NULL) {
+        // Случай когда удаляется корень дерева
+        if(*ppRoot == node_to_remove) {
+            *ppRoot = NULL;
+        } else { // Удаляется не корень
+            // В зависимости от того, в какой стороне находился дочерний удаляемый узел,
+            // устанавливаем NULL у родителя
+            if((*ppParent)->left == node_to_remove) {
+                (*ppParent)->left = NULL;
+            } else if((*ppParent)->right == node_to_remove) {
+                (*ppParent)->right = NULL;
+            }
+        }
+        //free(node_to_remove); 
+        //return;
+    }
+    // Случай, когда у узла есть только одно поддерево
     // Случай, когда у узла два поддерева
 
 
-   
-   
-    // // Если узла с таким числом нет - завершаем работу функции
-    // if(bin_search(&(*ppRoot), data) == 0) {
-    //     printf("Error! the tree do not have %d data\n", data);
-    //     return 1;
+
+
+    // Случай, когда у узла есть только одно поддерево
+    // if(pr_node->left != NULL && pr_node->right == NULL) {
+    //     *ppr_node = pr_node->left;
+    // }
+    // if(pr_node->right != NULL && pr_node->left == NULL) {
+    //     *ppr_node = pr_node->right;
     // }
 
 
-
-
-    printf("success remove \n");
+    
+    free(node_to_remove);
 }
 
 // Функция инициализирует дерево
@@ -267,7 +273,7 @@ void show_command() {
 }
 
 // Функция находит узел, который надо удалить или возвращает NULL, если такого узла не существует
-Node *find_node_to_remove(int data, Node **ppRoot) {
+Node *find_node_to_remove(int data, Node **ppRoot, Node **parent) {
     Node *node = *ppRoot;
     while(1) {
         if(node == NULL) {
@@ -276,6 +282,15 @@ Node *find_node_to_remove(int data, Node **ppRoot) {
         if(data == node->data) {
             break;
         }
+
+        // Ищем родителя для удаляемого элемента
+        if((node->left != NULL) && (node->left->data == data) ) {
+            *parent = node;
+        } else if((node->right != NULL) && (node->right->data == data)) {
+            *parent = node;
+        }
+
+        // Переходим на следующий узел
         if(data > node->data) {
             node = node->right;
         } else {
