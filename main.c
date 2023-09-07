@@ -14,12 +14,17 @@ void tree_initialization(Node **ppRoot);
 void add_node(Node **ppRoot);
 int print_tree_data(Node **ppRoot);
 void save_tree_data(Node **ppRoot, int arr[], int *pi);
+// часть 2
+void remove_node(Node *node_to_remove, Node **ppRoot);
 
 // Вспомогательные функции
 Node *create_node(Node **ppRoot);
 int bin_search(Node **ppRoot, int val);
 int get_int();
 void show_command();
+// часть 2
+Node *find_node_to_remove(int data, Node **ppRoot);
+
 
 
 
@@ -32,7 +37,7 @@ int main() {
         printf("\ncommand: ");
         // Получаем и обрабатываем команду от пользователя
         int command = get_int();
-        if(command < 1 || command > 3) {
+        if(command < 1 || command > 4) {
             printf("Incorrect command!\n");
             continue;
         }
@@ -57,11 +62,70 @@ int main() {
                 }
                 break;
             case 3:
+                // Проверка на не пустое дерево
+                if(root == NULL) {
+                    printf("Error! the tree is empty\n");
+                    break;
+                }
+                // Ввод пользователем числа, узел с которым надо удалить
+                printf("data(int) to remove: ");
+                int data_to_remove = get_int();
+                // Поиск узла, который содержит введённое значение
+                Node *node_to_remove = find_node_to_remove(data_to_remove, &root);
+                if(node_to_remove == NULL) {
+                    printf("Error! the tree do not have %d data\n", data_to_remove);
+                }
+                // Удаляем узел
+                remove_node(node_to_remove, &root);
+                break;
+            case 4:
                 printf("goodbye &_&\n");
                 return 0;
         }
     }
     return 0;
+}
+
+// Функция удаляет узел из дерева. Возвращает 1 в случае ошибки и 0 если удаление прошло успешно
+void remove_node(Node *node_to_remove, Node **ppRoot) {  
+    // Указатель на узел, который надо удалить. Инзначально равен корню дерева
+    Node **ppr_node = &(*ppRoot);
+    Node *pr_node = *ppRoot;
+    //Node *prev_r_node = NULL; // родительский узел удаляемого
+
+    
+    // // Если надо удалить корень дерева, при этом дерево состоит из одного лишь корня
+    // if(data == (*ppRoot)->data) {
+
+    // }
+
+    
+    // НА ЭТОМ ЭТАПЕ ДЕРЕВО НЕ ПУСТОЕ И СОДЕРЖИТ ЭЛЕМЕНТ DATA
+
+    // Случай, когда у узла есть только одно поддерево
+    if(pr_node->left != NULL && pr_node->right == NULL) {
+        *ppr_node = pr_node->left;
+    }
+    if(pr_node->right != NULL && pr_node->left == NULL) {
+        *ppr_node = pr_node->right;
+    }
+
+    // Случай, когда у узла нет поддеревьев
+    // Случай, когда у узла два поддерева
+
+
+   
+   
+    // // Если узла с таким числом нет - завершаем работу функции
+    // if(bin_search(&(*ppRoot), data) == 0) {
+    //     printf("Error! the tree do not have %d data\n", data);
+    //     return 1;
+    // }
+
+
+
+
+    printf("success remove \n");
 }
 
 // Функция инициализирует дерево
@@ -104,7 +168,7 @@ int print_tree_data(Node **ppRoot) {
     if(*ppRoot == NULL) {
         return 1;
     }
-    //char *file_name = "treeData.txt"; // Проблема тут
+    
     FILE *fp = fopen("treeData.txt", "w"); // создание нового пустого файла для записи
     if(fp == NULL) {
         return 1;
@@ -199,5 +263,24 @@ int get_int() {
 
 // Функция выводит на экран допустымие комманды
 void show_command() {
-    printf("Commands:\n\"1\": add note in binary tree\n\"2\": save tree data in .txt file\n\"3\": exit\n");
+    printf("Commands:\n\"1\": add note in binary tree\n\"2\": save tree data in .txt file\n\"3\": remove node\n\"4\": exit\n");
+}
+
+// Функция находит узел, который надо удалить или возвращает NULL, если такого узла не существует
+Node *find_node_to_remove(int data, Node **ppRoot) {
+    Node *node = *ppRoot;
+    while(1) {
+        if(node == NULL) {
+            break;
+        }
+        if(data == node->data) {
+            break;
+        }
+        if(data > node->data) {
+            node = node->right;
+        } else {
+            node = node->left;
+        }
+    }
+    return node;
 }
