@@ -92,12 +92,7 @@ int main() {
 // Функция удаляет узел из дерева. Возвращает 1 в случае ошибки и 0 если удаление прошло успешно
 void remove_node(Node *node_to_remove, Node **ppRoot, Node **ppParent) {  
     // ФУНКЦИЯ РАБОТАЕТ С НЕ ПУСТЫМ ДЕРЕВОМ, СОДЕРЖАЩИМ ЭЛЕМЕНТ DATA
-
-    // Указатель на узел, который надо удалить. Инзначально равен корню дерева
-    Node **ppr_node = &(*ppRoot);
-    Node *pr_node = *ppRoot;
-
-    
+   
     // Случай, когда у узла нет поддеревьев
     if(node_to_remove->left == NULL && node_to_remove->right == NULL) {
         // Случай когда удаляется корень дерева
@@ -112,26 +107,65 @@ void remove_node(Node *node_to_remove, Node **ppRoot, Node **ppParent) {
                 (*ppParent)->right = NULL;
             }
         }
-        //free(node_to_remove); 
-        //return;
+        free(node_to_remove);
+        return;
     }
-    // Случай, когда у узла есть только одно поддерево
+
+    // Случай, когда у узла есть только левое поддерево
+    if(node_to_remove->left != NULL && node_to_remove->right == NULL) {
+        // Удаляется корень дерева
+        if(*ppRoot == node_to_remove) {
+            *ppRoot = node_to_remove->left;
+            return;
+        }
+
+        // Удаляется не корень дерева
+        if((*ppParent)->left == node_to_remove) {
+            (*ppParent)->left = node_to_remove->left;
+        } else if((*ppParent)->right == node_to_remove) {
+            (*ppParent)->right = node_to_remove->left;
+        }
+        free(node_to_remove);
+        return;
+    // Случай, когда у узла есть только правое поддерево
+    } else if(node_to_remove->right != NULL && node_to_remove->left == NULL) {
+        // Удаляется корень дерева
+        if(*ppRoot == node_to_remove) {
+            *ppRoot = node_to_remove->right;
+            return;
+        }
+
+        // Удаляется не корень дерева
+        if((*ppParent)->left == node_to_remove) {
+            (*ppParent)->left = node_to_remove->right;
+        } else if((*ppParent)->right == node_to_remove) {
+            (*ppParent)->right = node_to_remove->right;
+        }
+        free(node_to_remove);
+        return;
+    }
+
     // Случай, когда у узла два поддерева
+    if(node_to_remove->left != NULL && node_to_remove->right != NULL) {
+        // Находим узел, который ближе всего по значению к удаляемому
+        Node *closest_node = node_to_remove->right; // Т.к. ищем наиближайший элемент в правом поддереве
+        *ppParent = node_to_remove; // тогда изначально родителем для ближайшего элемента будет удаляемый элемент
+        while(1) {
+            if(closest_node->left == NULL) {
+                break;
+            } else {
+                // В данном случае ppParent будет указывать на родителский элемент для найденного ближайшего по значению элемента
+                *ppParent = closest_node; 
+                closest_node = closest_node->left;
+            }
+        }
+        
+        // Помещаем найденное ближайшее значение на место удаляемого элемента
+        node_to_remove->data = closest_node->data;
 
-
-
-
-    // Случай, когда у узла есть только одно поддерево
-    // if(pr_node->left != NULL && pr_node->right == NULL) {
-    //     *ppr_node = pr_node->left;
-    // }
-    // if(pr_node->right != NULL && pr_node->left == NULL) {
-    //     *ppr_node = pr_node->right;
-    // }
-
-
-    
-    free(node_to_remove);
+        // Теперь осталось только удалить найденный ближайший по значению элемент
+        remove_node(closest_node, &(*ppRoot), &(*ppParent));
+    }   
 }
 
 // Функция инициализирует дерево
